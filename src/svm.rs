@@ -22,13 +22,45 @@ impl SVM {
 
         fx = sum + self.bias;
 
-        if fx > 0.0 {
+        if fx >= 0.0 {
             class = 1;
-        }
-        if fx < 0.0 {
+        } else if fx < 0.0 {
             class = -1;
         }
 
         class
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::kernel::Linear;
+
+    use super::*;
+
+    #[test]
+    fn svm_prediction_math_positive() {
+        let svm = SVM {
+            support_vectors: vec![vec![1.0, 0.0]],
+            alpha: vec![1.0],
+            label: vec![1.0],
+            bias: 0.0,
+            kernel: Box::new(Linear {}),
+        };
+
+        assert_eq!(svm.predict(&[1.0_f64, 0.0_f64]), 1);
+    }
+
+    #[test]
+    fn svm_prediction_math_negative() {
+        let svm = SVM {
+            support_vectors: vec![vec![1.0, 0.0]],
+            alpha: vec![1.0],
+            label: vec![-1.0],
+            bias: 0.0,
+            kernel: Box::new(Linear {}),
+        };
+
+        assert_eq!(svm.predict(&[1.0_f64, 0.0_f64]), -1);
     }
 }
