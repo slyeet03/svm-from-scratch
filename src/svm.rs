@@ -16,8 +16,7 @@ impl SVM {
         let mut class: i32 = 0;
 
         for n in 0..i {
-            sum +=
-                self.alpha[n] * self.label[n] * self.kernel.compute(&self.support_vectors[n], &x);
+            sum += self.alpha[n] * self.label[n] * self.kernel.compute(&self.support_vectors[n], x);
         }
 
         fx = sum + self.bias;
