@@ -2,11 +2,11 @@ use crate::kernel::Kernel;
 use rand::RngExt;
 
 pub struct SMO {
-    all_vectors: Vec<Vec<f64>>,
-    bias: f64,
-    alpha: Vec<f64>, //for all vector alphas
-    label: Vec<f64>, //for all vector labels, yi in prediction fn
-    error_cache: Vec<f64>,
+    pub all_vectors: Vec<Vec<f64>>,
+    pub bias: f64,
+    pub alpha: Vec<f64>, //for all vector alphas
+    pub label: Vec<f64>, //for all vector labels, yi in prediction fn
+    pub error_cache: Vec<f64>,
 }
 
 impl SMO {

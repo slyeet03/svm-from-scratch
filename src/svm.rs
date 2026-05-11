@@ -1,4 +1,5 @@
 use crate::kernel::Kernel;
+use crate::optimizer::SMO;
 
 pub struct SVM {
     support_vectors: Vec<Vec<f64>>,
@@ -28,6 +29,40 @@ impl SVM {
         }
 
         class
+    }
+
+    pub fn fit(
+        &mut self,
+        data: Vec<Vec<f64>>,
+        labels: Vec<f64>,
+        C: f64,
+        alpha_tol: f64,
+        kkt_tol: f64,
+        max_passes: usize,
+    ) {
+        let n: usize = data.len();
+
+        let mut smo = SMO {
+            all_vectors: data,
+            label: labels,
+            alpha: vec![0.0; n],
+            bias: 0.0,
+            error_cache: vec![0.0; n],
+        };
+
+        let kernel = self.kernel.as_ref();
+
+        let (alphas, bias) = smo.train(kkt_tol, alpha_tol, C, max_passes, kernel);
+
+        for i in 0..n {
+            if alphas[i] > 1e-5 {
+                self.support_vectors.push(smo.all_vectors[i].clone());
+                self.alpha.push(alphas[i]);
+                self.label.push(smo.label[i]);
+            }
+        }
+
+        self.bias = bias;
     }
 }
 
