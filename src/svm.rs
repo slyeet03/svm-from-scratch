@@ -1,3 +1,4 @@
+use crate::hyperparameters::{self, Hyperparameters};
 use crate::kernel::Kernel;
 use crate::optimizer::SMO;
 
@@ -41,15 +42,22 @@ impl SVM {
         class
     }
 
-    pub fn fit(
-        &mut self,
-        data: Vec<Vec<f64>>,
-        labels: Vec<f64>,
-        C: f64,
-        alpha_tol: f64,
-        kkt_tol: f64,
-        max_passes: usize,
-    ) {
+    pub fn predict_raw(&self, x: &[f64]) -> f64 {
+        let i: usize = self.support_vectors.len();
+        let mut fx: f64 = 0.0;
+        let mut sum: f64 = 0.0;
+        let mut class: i32 = 0;
+
+        for n in 0..i {
+            sum += self.alpha[n] * self.label[n] * self.kernel.compute(&self.support_vectors[n], x);
+        }
+
+        fx = sum + self.bias;
+
+        fx
+    }
+
+    pub fn fit(&mut self, data: Vec<Vec<f64>>, labels: Vec<f64>, hyperparameters: Hyperparameters) {
         let n: usize = data.len();
 
         let mut smo = SMO {
@@ -62,7 +70,13 @@ impl SVM {
 
         let kernel = self.kernel.as_ref();
 
-        let (alphas, bias) = smo.train(kkt_tol, alpha_tol, C, max_passes, kernel);
+        let (alphas, bias) = smo.train(
+            hyperparameters.kkt_tol,
+            hyperparameters.alpha_tol,
+            hyperparameters.C,
+            hyperparameters.max_passes,
+            kernel,
+        );
 
         for i in 0..n {
             if alphas[i] > 1e-5 {
@@ -117,15 +131,12 @@ mod tests {
             vec![-2.0, -2.0],
         ];
         let labels: Vec<f64> = vec![1.0, 1.0, -1.0, -1.0];
-        let C: f64 = 1.0;
-        let kkt_tol: f64 = 0.001;
-        let alpha_tol: f64 = 1e-5;
-        let max_passes: usize = 100;
         let n: usize = data.len();
+        let hyperparameters = Hyperparameters::default(n);
 
         let mut svm = SVM::new(Box::new(Linear));
 
-        svm.fit(data, labels, C, alpha_tol, kkt_tol, max_passes);
+        svm.fit(data, labels, hyperparameters);
 
         assert!(svm.support_vectors.len() > 0);
         assert!(svm.support_vectors.len() <= n);
@@ -142,16 +153,18 @@ mod tests {
             vec![-2.0, -2.0],
         ];
         let labels: Vec<f64> = vec![1.0, 1.0, -1.0, -1.0];
-        let C: f64 = 1.0;
-        let kkt_tol: f64 = 0.001;
-        let alpha_tol: f64 = 1e-5;
-        let max_passes: usize = 100;
+        let n: usize = data.len();
+        let hyperparameters = Hyperparameters::default(n);
 
         let mut svm = SVM::new(Box::new(Linear));
 
-        svm.fit(data, labels, C, alpha_tol, kkt_tol, max_passes);
+        svm.fit(data, labels, hyperparameters);
 
-        assert!(svm.alpha.iter().all(|&a| a > 1e-5 && a <= C));
+        assert!(
+            svm.alpha
+                .iter()
+                .all(|&a| a > 1e-5 && a <= hyperparameters.C)
+        );
         assert!(svm.label.iter().all(|&a| a == 1.0 || a == -1.0));
     }
 
@@ -164,14 +177,12 @@ mod tests {
             vec![-2.0, -2.0],
         ];
         let labels: Vec<f64> = vec![1.0, 1.0, -1.0, -1.0];
-        let C: f64 = 1.0;
-        let kkt_tol: f64 = 0.001;
-        let alpha_tol: f64 = 1e-5;
-        let max_passes: usize = 100;
+        let n: usize = data.len();
+        let hyperparameters = Hyperparameters::default(n);
 
         let mut svm = SVM::new(Box::new(Linear));
 
-        svm.fit(data, labels, C, alpha_tol, kkt_tol, max_passes);
+        svm.fit(data, labels, hyperparameters);
 
         assert_eq!(svm.predict(&[2.0, 2.0]), 1);
         assert_eq!(svm.predict(&[1.0, 1.0]), 1);

@@ -1,11 +1,14 @@
 use crate::data::{generate_blobs, load_csv, split_data};
+use crate::hyperparameters::Hyperparameters;
 use crate::kernel::{Linear, RBF};
 use crate::svm::SVM;
 
 mod data;
 mod evaluation;
+mod hyperparameters;
 mod kernel;
 mod optimizer;
+mod plots;
 mod svm;
 
 fn main() {
@@ -18,8 +21,9 @@ fn main() {
 fn svm_using_generated_data_with_linear_kernel() {
     let (data, labels) = generate_blobs(50, 0.2, 42);
     let mut svm = SVM::new(Box::new(Linear));
+    let hyperparameters = Hyperparameters::default(data.len());
 
-    svm.fit(data, labels, 1.0, 0.001, 1e-5, 100);
+    svm.fit(data, labels, hyperparameters);
 
     println!("\nSVM using Linear Kernel with generated data");
     println!("Training complete");
@@ -50,8 +54,9 @@ fn svm_using_generated_data_with_RBF_kernel() {
     let labels = vec![1.0, 1.0, -1.0, -1.0];
 
     let mut svm = SVM::new(Box::new(RBF { sigma: 5.0 }));
+    let hyperparameters = Hyperparameters::default(data.len());
 
-    svm.fit(data, labels, 1.0, 0.001, 1e-5, 100);
+    svm.fit(data, labels, hyperparameters);
 
     println!("\nSVM using RBF Kernel with generated data");
     println!("Training complete");
@@ -77,12 +82,12 @@ fn svm_using_generated_data_with_RBF_kernel() {
 
 fn svm_using_csv_data_linear() {
     let (data, labels) = load_csv("test_datasets/linear_svm_dataset.csv", true);
+    let hyperparameters = Hyperparameters::default(data.len());
     let (train_set, test_set) = split_data(80, 20, data, labels);
 
     let mut svm = SVM::new(Box::new(Linear));
 
-    svm.fit(train_set.0, train_set.1, 1.0, 0.001, 1e-5, 100);
-
+    svm.fit(train_set.0, train_set.1, hyperparameters);
     println!("\nSVM using Linear Kernel with csv data");
     println!("Training complete");
     println!("Support vectors: {}", svm.support_vectors.len());
@@ -103,11 +108,11 @@ fn svm_using_csv_data_linear() {
 
 fn svm_using_csv_data_rbf() {
     let (data, labels) = load_csv("test_datasets/rbf_svm_dataset.csv", true);
+    let hyperparameters = Hyperparameters::default(data.len());
 
     let mut svm = SVM::new(Box::new(RBF { sigma: 1.0 }));
 
-    svm.fit(data, labels, 1.0, 0.001, 1e-5, 100);
-
+    svm.fit(data, labels, hyperparameters);
     println!("\nSVM using RBF Kernel with csv data");
     println!("Training complete");
     println!("Support vectors: {}", svm.support_vectors.len());
