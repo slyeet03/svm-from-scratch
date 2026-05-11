@@ -76,6 +76,7 @@ impl SMO {
         if ((alphaj_new - alphaj_old).abs()) >= tol {
             let s: f64 = self.label[i] * self.label[j];
             alphai_new = alphai_old + (s * (alphaj_old - alphaj_new));
+            alphai_new = alphai_new.max(0.0).min(C);
 
             self.alpha[j] = alphaj_new;
             self.alpha[i] = alphai_new;

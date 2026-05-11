@@ -2,11 +2,11 @@ use crate::kernel::Kernel;
 use crate::optimizer::SMO;
 
 pub struct SVM {
-    support_vectors: Vec<Vec<f64>>,
-    bias: f64,
-    alpha: Vec<f64>, //support vector alphas only
-    kernel: Box<dyn Kernel>,
-    label: Vec<f64>, //support vector labels only, yi in prediction fn
+    pub support_vectors: Vec<Vec<f64>>,
+    pub bias: f64,
+    pub alpha: Vec<f64>, //support vector alphas only
+    pub kernel: Box<dyn Kernel>,
+    pub label: Vec<f64>, //support vector labels only, yi in prediction fn
 }
 
 impl SVM {
@@ -146,7 +146,6 @@ mod tests {
         let kkt_tol: f64 = 0.001;
         let alpha_tol: f64 = 1e-5;
         let max_passes: usize = 100;
-        let n: usize = data.len();
 
         let mut svm = SVM::new(Box::new(Linear));
 
@@ -169,7 +168,6 @@ mod tests {
         let kkt_tol: f64 = 0.001;
         let alpha_tol: f64 = 1e-5;
         let max_passes: usize = 100;
-        let n: usize = data.len();
 
         let mut svm = SVM::new(Box::new(Linear));
 
