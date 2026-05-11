@@ -1,8 +1,9 @@
-use crate::data::generate_blobs;
+use crate::data::{generate_blobs, load_csv, split_data};
 use crate::kernel::{Linear, RBF};
 use crate::svm::SVM;
 
 mod data;
+mod evaluation;
 mod kernel;
 mod optimizer;
 mod svm;
@@ -10,6 +11,8 @@ mod svm;
 fn main() {
     svm_using_generated_data_with_linear_kernel();
     svm_using_generated_data_with_RBF_kernel();
+    svm_using_csv_data_linear();
+    svm_using_csv_data_rbf();
 }
 
 fn svm_using_generated_data_with_linear_kernel() {
@@ -69,5 +72,56 @@ fn svm_using_generated_data_with_RBF_kernel() {
     for point in &test_points {
         let class = svm.predict(point);
         println!("{:?} → class: {}", point, class);
+    }
+}
+
+fn svm_using_csv_data_linear() {
+    let (data, labels) = load_csv("test_datasets/linear_svm_dataset.csv", true);
+    let (train_set, test_set) = split_data(80, 20, data, labels);
+
+    let mut svm = SVM::new(Box::new(Linear));
+
+    svm.fit(train_set.0, train_set.1, 1.0, 0.001, 1e-5, 100);
+
+    println!("\nSVM using Linear Kernel with csv data");
+    println!("Training complete");
+    println!("Support vectors: {}", svm.support_vectors.len());
+    println!("Bias: {}", svm.bias);
+
+    let test_points = vec![
+        vec![4.0, 4.0],
+        vec![-4.0, -4.0],
+        vec![1.0, 1.0],
+        vec![-1.0, -2.0],
+    ];
+
+    for point in &test_points {
+        let class = svm.predict(point);
+        println!("{:?} -> class: {}", point, class);
+    }
+}
+
+fn svm_using_csv_data_rbf() {
+    let (data, labels) = load_csv("test_datasets/rbf_svm_dataset.csv", true);
+
+    let mut svm = SVM::new(Box::new(RBF { sigma: 1.0 }));
+
+    svm.fit(data, labels, 1.0, 0.001, 1e-5, 100);
+
+    println!("\nSVM using RBF Kernel with csv data");
+    println!("Training complete");
+    println!("Support vectors: {}", svm.support_vectors.len());
+    println!("Bias: {}", svm.bias);
+
+    let test_points = vec![
+        vec![1.0, 1.0],
+        vec![-1.0, -1.0],
+        vec![1.0, -1.0],
+        vec![-1.0, 1.0],
+    ];
+
+    for point in &test_points {
+        let class = svm.predict(point);
+        println!("{:?} -> class: {}", point, class);
     }
 }

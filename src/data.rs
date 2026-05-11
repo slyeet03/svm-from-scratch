@@ -67,6 +67,34 @@ pub fn load_csv(path: &str, has_header: bool) -> (Vec<Vec<f64>>, Vec<f64>) {
     (points, labels)
 }
 
+pub fn split_data(
+    train_perc: usize,
+    test_perc: usize,
+    points: Vec<Vec<f64>>,
+    labels: Vec<f64>,
+) -> ((Vec<Vec<f64>>, Vec<f64>), (Vec<Vec<f64>>, Vec<f64>)) {
+    let mut train_set: (Vec<Vec<f64>>, Vec<f64>) = (Vec::new(), Vec::new());
+
+    let mut test_set: (Vec<Vec<f64>>, Vec<f64>) = (Vec::new(), Vec::new());
+
+    let n = points.len();
+
+    let train_index_end = n * train_perc / 100;
+    let test_index_end = train_index_end + (n * test_perc / 100);
+
+    for i in 0..train_index_end {
+        train_set.0.push(points[i].clone());
+        train_set.1.push(labels[i]);
+    }
+
+    for j in train_index_end..test_index_end {
+        test_set.0.push(points[j].clone());
+        test_set.1.push(labels[j]);
+    }
+
+    (train_set, test_set)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
