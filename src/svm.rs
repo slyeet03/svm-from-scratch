@@ -10,6 +10,16 @@ pub struct SVM {
 }
 
 impl SVM {
+    pub fn new(kernel: Box<dyn Kernel>) -> Self {
+        SVM {
+            support_vectors: Vec::new(),
+            bias: 0.0,
+            label: Vec::new(),
+            alpha: Vec::new(),
+            kernel: kernel,
+        }
+    }
+
     pub fn predict(&self, x: &[f64]) -> i32 {
         let i: usize = self.support_vectors.len();
         let mut fx: f64 = 0.0;
@@ -68,7 +78,7 @@ impl SVM {
 
 #[cfg(test)]
 mod tests {
-    use crate::kernel::Linear;
+    use crate::kernel::{self, Linear};
 
     use super::*;
 
@@ -96,5 +106,80 @@ mod tests {
         };
 
         assert_eq!(svm.predict(&[1.0_f64, 0.0_f64]), -1);
+    }
+
+    #[test]
+    fn svm_fit_sv() {
+        let data: Vec<Vec<f64>> = vec![
+            vec![2.0, 2.0],
+            vec![1.0, 1.0],
+            vec![-1.0, -1.0],
+            vec![-2.0, -2.0],
+        ];
+        let labels: Vec<f64> = vec![1.0, 1.0, -1.0, -1.0];
+        let C: f64 = 1.0;
+        let kkt_tol: f64 = 0.001;
+        let alpha_tol: f64 = 1e-5;
+        let max_passes: usize = 100;
+        let n: usize = data.len();
+
+        let mut svm = SVM::new(Box::new(Linear));
+
+        svm.fit(data, labels, C, alpha_tol, kkt_tol, max_passes);
+
+        assert!(svm.support_vectors.len() > 0);
+        assert!(svm.support_vectors.len() <= n);
+        assert_eq!(svm.support_vectors.len(), svm.alpha.len());
+        assert_eq!(svm.support_vectors.len(), svm.label.len());
+    }
+
+    #[test]
+    fn svm_fit_valid_values() {
+        let data: Vec<Vec<f64>> = vec![
+            vec![2.0, 2.0],
+            vec![1.0, 1.0],
+            vec![-1.0, -1.0],
+            vec![-2.0, -2.0],
+        ];
+        let labels: Vec<f64> = vec![1.0, 1.0, -1.0, -1.0];
+        let C: f64 = 1.0;
+        let kkt_tol: f64 = 0.001;
+        let alpha_tol: f64 = 1e-5;
+        let max_passes: usize = 100;
+        let n: usize = data.len();
+
+        let mut svm = SVM::new(Box::new(Linear));
+
+        svm.fit(data, labels, C, alpha_tol, kkt_tol, max_passes);
+
+        assert!(svm.alpha.iter().all(|&a| a > 1e-5 && a <= C));
+        assert!(svm.label.iter().all(|&a| a == 1.0 || a == -1.0));
+    }
+
+    #[test]
+    fn svm_fit_correct_predictions() {
+        let data: Vec<Vec<f64>> = vec![
+            vec![2.0, 2.0],
+            vec![1.0, 1.0],
+            vec![-1.0, -1.0],
+            vec![-2.0, -2.0],
+        ];
+        let labels: Vec<f64> = vec![1.0, 1.0, -1.0, -1.0];
+        let C: f64 = 1.0;
+        let kkt_tol: f64 = 0.001;
+        let alpha_tol: f64 = 1e-5;
+        let max_passes: usize = 100;
+        let n: usize = data.len();
+
+        let mut svm = SVM::new(Box::new(Linear));
+
+        svm.fit(data, labels, C, alpha_tol, kkt_tol, max_passes);
+
+        assert_eq!(svm.predict(&[2.0, 2.0]), 1);
+        assert_eq!(svm.predict(&[1.0, 1.0]), 1);
+        assert_eq!(svm.predict(&[-1.0, -1.0]), -1);
+        assert_eq!(svm.predict(&[-2.0, -2.0]), -1);
+        assert_eq!(svm.predict(&[3.0, 3.0]), 1);
+        assert_eq!(svm.predict(&[-3.0, -3.0]), -1);
     }
 }
