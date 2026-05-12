@@ -70,8 +70,8 @@ pub fn load_csv(path: &str, has_header: bool) -> (Vec<Vec<f64>>, Vec<f64>) {
 pub fn split_data(
     train_perc: usize,
     test_perc: usize,
-    points: Vec<Vec<f64>>,
-    labels: Vec<f64>,
+    points: &Vec<Vec<f64>>,
+    labels: &Vec<f64>,
 ) -> ((Vec<Vec<f64>>, Vec<f64>), (Vec<Vec<f64>>, Vec<f64>)) {
     let mut train_set: (Vec<Vec<f64>>, Vec<f64>) = (Vec::new(), Vec::new());
 

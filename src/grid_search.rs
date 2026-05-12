@@ -25,13 +25,14 @@ impl BestHyperParams {
                 hyperparameters.sigma = *sigma;
                 hyperparameters.C = *C;
 
-                let score: f64 = cross_validate(data, label, k, &hyperparameters, &kernel_type);
+                let score: f64 =
+                    cross_validate(data, label, k_folds, &hyperparameters, &kernel_type);
                 println!("\nTesting C={}, sigma={} → accuracy={:.3}", C, sigma, score);
                 all_score.push((*C, *sigma, score));
             }
         }
 
-        for (C, sigma, score) in all_score {
+        for (C, sigma, score) in all_score.clone() {
             if score > best_score {
                 best_score = score;
 
@@ -39,8 +40,6 @@ impl BestHyperParams {
                 hyperparameters.C = C;
             }
         }
-
-        println!("\n");
 
         BestHyperParams {
             best_config: hyperparameters,
