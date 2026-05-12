@@ -1,4 +1,4 @@
-use crate::data::{generate_blobs, load_csv, split_data};
+use crate::data::{generate_blobs, load_csv, shuffle_data, split_data};
 use crate::evaluation::Metrics;
 use crate::hyperparameters::Hyperparameters;
 use crate::kernel::{Linear, RBF};
@@ -18,7 +18,7 @@ mod plots;
 mod svm;
 
 fn main() {
-    svm_using_csv_data_linear();
+    svm_using_csv_data_rbf();
 }
 
 fn svm_using_generated_data_with_linear_kernel() {
@@ -133,7 +133,7 @@ fn svm_using_csv_data_linear() {
 
 fn svm_using_csv_data_rbf() {
     let (data, labels) = load_csv("test_datasets/rbf_svm_dataset.csv", true);
-
+    let (data, labels) = shuffle_data(data, labels, 42);
     let c_values = vec![0.1, 1.0, 10.0, 100.0];
     let sigma_values = vec![0.1, 0.5, 1.0, 5.0];
 

@@ -95,6 +95,21 @@ pub fn split_data(
     (train_set, test_set)
 }
 
+pub fn shuffle_data(
+    points: Vec<Vec<f64>>,
+    labels: Vec<f64>,
+    seed: u64,
+) -> (Vec<Vec<f64>>, Vec<f64>) {
+    use rand::{SeedableRng, seq::SliceRandom};
+    let mut rng = StdRng::seed_from_u64(seed);
+    let mut indices: Vec<usize> = (0..points.len()).collect();
+    indices.shuffle(&mut rng);
+
+    let shuffled_points = indices.iter().map(|&i| points[i].clone()).collect();
+    let shuffled_labels = indices.iter().map(|&i| labels[i]).collect();
+    (shuffled_points, shuffled_labels)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
