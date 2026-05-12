@@ -43,6 +43,13 @@ impl Kernel for RBF {
     }
 }
 
+pub fn make_kernel(kernel_type: &KernelType, sigma: f64) -> Box<dyn Kernel> {
+    match kernel_type {
+        KernelType::Linear => Box::new(Linear),
+        KernelType::RBF => Box::new(RBF { sigma }),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -1,8 +1,10 @@
 use crate::data::{generate_blobs, load_csv, split_data};
+use crate::evaluation::Metrics;
 use crate::hyperparameters::Hyperparameters;
 use crate::kernel::{Linear, RBF};
 use crate::svm::SVM;
 
+mod cross_val;
 mod data;
 mod evaluation;
 mod hyperparameters;
@@ -104,15 +106,19 @@ fn svm_using_csv_data_linear() {
         let class = svm.predict(point);
         println!("{:?} -> class: {}", point, class);
     }
+
+    let metrics = Metrics::compute_metric(&svm, &test_set);
+    println!("Accuracy: {}", metrics.accuracy);
 }
 
 fn svm_using_csv_data_rbf() {
     let (data, labels) = load_csv("test_datasets/rbf_svm_dataset.csv", true);
     let hyperparameters = Hyperparameters::default(data.len());
+    let (train_set, test_set) = split_data(80, 20, data, labels);
 
     let mut svm = SVM::new(Box::new(RBF { sigma: 1.0 }));
 
-    svm.fit(data, labels, hyperparameters);
+    svm.fit(train_set.0, train_set.1, hyperparameters);
     println!("\nSVM using RBF Kernel with csv data");
     println!("Training complete");
     println!("Support vectors: {}", svm.support_vectors.len());
@@ -129,4 +135,7 @@ fn svm_using_csv_data_rbf() {
         let class = svm.predict(point);
         println!("{:?} -> class: {}", point, class);
     }
+
+    let metrics = Metrics::compute_metric(&svm, &test_set);
+    println!("Accuracy: {}", metrics.accuracy);
 }

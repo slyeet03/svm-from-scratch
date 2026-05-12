@@ -34,14 +34,14 @@ impl Metrics {
     }
 
     pub fn compute_recall(&mut self) {
-        self.recall = self.TP / (self.TP + self.FP);
+        self.recall = self.TP / (self.TP + self.FN);
     }
 
     pub fn compute_F1(&mut self) {
         self.F1 = (2.0 * self.precision * self.recall) / (self.precision + self.recall);
     }
 
-    pub fn compute_metric(model: &SVM, test_set: (Vec<Vec<f64>>, Vec<f64>)) -> Self {
+    pub fn compute_metric(model: &SVM, test_set: &(Vec<Vec<f64>>, Vec<f64>)) -> Self {
         let mut metrics = Metrics::new();
 
         for i in 0..test_set.0.len() {
