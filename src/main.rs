@@ -7,6 +7,7 @@ use crate::svm::SVM;
 mod cross_val;
 mod data;
 mod evaluation;
+mod grid_search;
 mod hyperparameters;
 mod kernel;
 mod optimizer;
