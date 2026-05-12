@@ -14,12 +14,7 @@ mod optimizer;
 mod plots;
 mod svm;
 
-fn main() {
-    svm_using_generated_data_with_linear_kernel();
-    svm_using_generated_data_with_RBF_kernel();
-    svm_using_csv_data_linear();
-    svm_using_csv_data_rbf();
-}
+fn main() {}
 
 fn svm_using_generated_data_with_linear_kernel() {
     let (data, labels) = generate_blobs(50, 0.2, 42);
