@@ -56,7 +56,7 @@ fn svm_on_kaggle_dataset_rbf() {
         &kernel::KernelType::RBF,
         "plots/learning_curve_rbf.png",
     );
-    plot_decision_boundary_3d(&svm, &data, &labels, "plots/decision_boundary_rbf");
+    plot_decision_boundary_3d(&svm, &data, &labels, "plots/decision_boundary_rbf.png");
 }
 
 fn svm_on_kaggle_dataset_linear() {
@@ -90,5 +90,5 @@ fn svm_on_kaggle_dataset_linear() {
         &kernel::KernelType::Linear,
         "plots/learning_curve_linear.png",
     );
-    plot_decision_boundary_3d(&svm, &data, &labels, "plots/decision_boundary_linear");
+    plot_decision_boundary_3d(&svm, &data, &labels, "plots/decision_boundary_linear.png");
 }
