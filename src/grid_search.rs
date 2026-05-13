@@ -27,7 +27,6 @@ impl BestHyperParams {
 
                 let score: f64 =
                     cross_validate(data, label, k_folds, &hyperparameters, &kernel_type);
-                println!("\nTesting C={}, sigma={} → accuracy={:.3}", C, sigma, score);
                 all_score.push((*C, *sigma, score));
             }
         }

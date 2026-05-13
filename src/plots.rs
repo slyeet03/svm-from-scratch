@@ -11,8 +11,125 @@ use crate::{
     evaluation::Metrics,
     hyperparameters::Hyperparameters,
     kernel::{KernelType, make_kernel},
+    pca::PCA,
     svm::SVM,
 };
+
+pub fn plot_decision_boundary_3d(svm: &SVM, data: &[Vec<f64>], labels: &[f64], path: &str) {
+    let pca = PCA::fit(data, 3);
+    let projected = pca.transform(data); // shape: [n, 3]
+
+    let x_min = projected.iter().map(|p| p[0]).fold(f64::INFINITY, f64::min) - 0.5;
+    let x_max = projected
+        .iter()
+        .map(|p| p[0])
+        .fold(f64::NEG_INFINITY, f64::max)
+        + 0.5;
+    let y_min = projected.iter().map(|p| p[1]).fold(f64::INFINITY, f64::min) - 0.5;
+    let y_max = projected
+        .iter()
+        .map(|p| p[1])
+        .fold(f64::NEG_INFINITY, f64::max)
+        + 0.5;
+    let z_min = projected.iter().map(|p| p[2]).fold(f64::INFINITY, f64::min) - 0.5;
+    let z_max = projected
+        .iter()
+        .map(|p| p[2])
+        .fold(f64::NEG_INFINITY, f64::max)
+        + 0.5;
+
+    let root = BitMapBackend::new(path, (900, 700)).into_drawing_area();
+    root.fill(&WHITE).unwrap();
+
+    let mut chart = ChartBuilder::on(&root)
+        .caption("SVM Decision Boundary (PCA 3D)", ("sans-serif", 22))
+        .margin(20)
+        .build_cartesian_3d(x_min..x_max, y_min..y_max, z_min..z_max)
+        .unwrap();
+
+    chart.with_projection(|mut p| {
+        p.pitch = 0.3; // vertical angle — tweak these
+        p.yaw = 0.6; // horizontal rotation
+        p.scale = 0.85;
+        p.into_matrix()
+    });
+
+    chart.configure_axes().draw().unwrap();
+
+    // draw data points colored by label
+    for (i, point) in projected.iter().enumerate() {
+        let color = if labels[i] == 1.0 {
+            BLUE.filled()
+        } else {
+            RED.filled()
+        };
+        chart
+            .draw_series(std::iter::once(Circle::new(
+                (point[0], point[1], point[2]),
+                4,
+                color,
+            )))
+            .unwrap();
+    }
+
+    // draw decision surface: sample a grid in PC1-PC2 plane at z slices
+    // for each (px, py) in grid, find the z where decision value = 0
+    // simpler: just color a grid of points in 3D by their predicted class
+    let resolution = 15; // keep low — O(resolution^3) predictions
+    let x_step = (x_max - x_min) / resolution as f64;
+    let y_step = (y_max - y_min) / resolution as f64;
+    let z_step = (z_max - z_min) / resolution as f64;
+
+    for i in 0..resolution {
+        for j in 0..resolution {
+            for k in 0..resolution {
+                let px = x_min + i as f64 * x_step;
+                let py = y_min + j as f64 * y_step;
+                let pz = z_min + k as f64 * z_step;
+
+                // inverse project back to full-dim space
+                let full_point: Vec<f64> = pca
+                    .mean
+                    .iter()
+                    .enumerate()
+                    .map(|(dim, &m)| {
+                        m + px * pca.components[0][dim]
+                            + py * pca.components[1][dim]
+                            + pz * pca.components[2][dim]
+                    })
+                    .collect();
+
+                let val = svm.predict_raw(&full_point);
+
+                // only draw points near the decision boundary (|val| < threshold)
+                if val.abs() < 0.4 {
+                    let color = RGBColor(180, 180, 180).mix(0.3);
+                    chart
+                        .draw_series(std::iter::once(Circle::new(
+                            (px, py, pz),
+                            2,
+                            color.filled(),
+                        )))
+                        .unwrap();
+                }
+            }
+        }
+    }
+
+    // highlight support vectors
+    let sv_projected = pca.transform(&svm.support_vectors);
+    for sv in &sv_projected {
+        chart
+            .draw_series(std::iter::once(Circle::new(
+                (sv[0], sv[1], sv[2]),
+                6,
+                BLACK.stroke_width(2),
+            )))
+            .unwrap();
+    }
+
+    root.present().unwrap();
+}
 
 pub fn plot_decision_boundary(svm: &SVM, data: &[Vec<f64>], labels: &[f64], path: &str) {
     let root = BitMapBackend::new(path, (800, 600)).into_drawing_area();
@@ -45,9 +162,9 @@ pub fn plot_decision_boundary(svm: &SVM, data: &[Vec<f64>], labels: &[f64], path
             let y = y_min + j as f64 * y_step;
             let pred = svm.predict_raw(&[x, y]);
             let color = if pred >= 0.0 {
-                RGBColor(180, 210, 255).mix(0.5) // light blue for +1
+                RGBColor(180, 210, 255).mix(0.5)
             } else {
-                RGBColor(255, 180, 180).mix(0.5) // light red for -1
+                RGBColor(255, 180, 180).mix(0.5)
             };
             chart
                 .draw_series(std::iter::once(Rectangle::new(
