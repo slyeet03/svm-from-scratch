@@ -29,6 +29,7 @@ src/
 - RBF (Gaussian): controlled by the `sigma` parameter
 
 **SMO Optimizer**
+
 Implements the full SMO algorithm with:
 
 - KKT condition checking
@@ -38,9 +39,11 @@ Implements the full SMO algorithm with:
 - Error cache for efficiency
 
 **Hyperparameter Tuning**
+
 Grid search over `C` and `sigma` values using k-fold cross-validation. The best configuration is selected by average cross-validation accuracy.
 
 **Evaluation**
+
 Computes accuracy, precision, recall, and F1 score from a confusion matrix (TP, TN, FP, FN).
 
 **Visualization**
