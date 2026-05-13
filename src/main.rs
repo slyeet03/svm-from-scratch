@@ -90,5 +90,5 @@ fn svm_on_kaggle_dataset_linear() {
         &kernel::KernelType::Linear,
         "plots/learning_curve_linear.png",
     );
-    plot_decision_boundary(&svm, &data, &labels, "plots/decision_boundary_linear.png");
+    plot_decision_boundary_3d(&svm, &data, &labels, "plots/decision_boundary_linear");
 }
